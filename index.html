@@ -1,0 +1,817 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>⚡ Quick Guess Duel — Full</title>
+  <style>
+    :root{
+      --bg1:#0f172a; --bg2:#0b1220; --card:#0b1226; --muted:#99a6bf; --accent:#60a5fa; --glass: rgba(255,255,255,0.03);
+      --text:#e6eef8; --ink:#dbeafe; --success:#7ee4a2; --danger:#fb7185;
+      --radius:14px;
+      --shadow: 0 10px 30px rgba(2,6,23,0.6);
+    }
+    [data-theme="light"]{
+      --bg1:#eef2ff; --bg2:#f8fafc; --card:#ffffff; --muted:#475569; --accent:#0ea5a4; --glass: rgba(2,6,23,0.03);
+      --text:#0b1220; --ink:#0b1220; --success:#059669; --danger:#dc2626;
+      --shadow: 0 8px 18px rgba(3,10,34,0.06);
+    }
+
+    html,body{height:100%;margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial;color:var(--text);-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;}
+    body{
+      background:linear-gradient(160deg,var(--bg1) 0%, var(--bg2) 100%);
+      display:flex;align-items:center;justify-content:center;padding:28px;
+    }
+
+    .container{width:100%;max-width:1100px;padding:12px}
+    .card{
+      background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      border-radius:var(--radius);padding:20px;box-shadow:var(--shadow);
+      color:var(--text);
+    }
+
+    /* Header */
+    .header-row{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+    .title {
+      display:flex;gap:12px;align-items:center;
+    }
+    .logo {
+      width:44px;height:44px;border-radius:10px;background:linear-gradient(135deg,var(--accent),#8b5cf6);display:flex;align-items:center;justify-content:center;font-weight:800;color:#031025;box-shadow:0 6px 18px rgba(2,6,23,0.35);
+    }
+    h1{margin:0;font-size:18px;color:var(--ink)}
+    .lead{margin:0;color:var(--muted);font-size:13px}
+
+    /* layout */
+    .grid{display:grid;grid-template-columns: 1fr 360px;gap:18px;margin-top:16px}
+    .controls-col{display:flex;flex-direction:column;gap:12px}
+    .row{display:flex;gap:12px;flex-wrap:wrap}
+    .col{flex:1;min-width:140px}
+    label.small{display:block;font-size:12px;color:var(--muted);margin-bottom:6px}
+    input[type="text"], input[type="number"], select, button{
+      width:100%;padding:10px;border-radius:12px;border:1px solid rgba(255,255,255,0.04);
+      background:transparent;color:inherit;font-size:14px;outline:none;
+    }
+    select { cursor:pointer; }
+    input[type="number"]::-webkit-outer-spin-button, input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+    .btn{display:inline-block;background:var(--accent);color:#021023;padding:10px 12px;border-radius:12px;font-weight:700;border:none;cursor:pointer;}
+    .btn.ghost{background:transparent;color:var(--accent);border:1px solid rgba(255,255,255,0.06)}
+    .pill{display:inline-flex;align-items:center;gap:8px;padding:6px 10px;border-radius:999px;background:var(--glass)}
+    .muted{font-size:13px;color:var(--muted)}
+    footer.small{margin-top:10px;font-size:12px;color:var(--muted)}
+
+    /* game area */
+    .game {
+      display:flex;flex-direction:column;gap:12px;
+    }
+    .game-top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+    .playerHeading{font-weight:800;font-size:18px}
+    .timer{font-weight:800;font-size:18px;padding:8px 12px;border-radius:12px;background:var(--glass);color:var(--accent)}
+    .timer.warn{color:var(--danger)}
+    .input-number{width:100%;padding:12px;border-radius:12px;border:1px solid rgba(255,255,255,0.04);font-size:18px;text-align:center;background:transparent}
+    .notice{margin-top:8px;padding:8px;border-radius:10px;background:rgba(0,0,0,0.18);font-weight:700}
+    .hint{margin-top:8px;padding:10px;border-radius:10px;background:linear-gradient(90deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));font-weight:700}
+    .scoreboard{border-top:1px dashed rgba(255,255,255,0.04);padding-top:12px}
+    .player-line{display:flex;justify-content:space-between;align-items:center;padding:8px 6px;border-radius:10px}
+    .player-line.active{background:linear-gradient(90deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));box-shadow:inset 0 0 0 1px rgba(255,255,255,0.01)}
+    .player-name{font-weight:700}
+    .controls{display:flex;gap:10px;flex-wrap:wrap}
+
+    /* modals */
+    .modal{position:fixed;left:0;top:0;right:0;bottom:0;display:flex;align-items:center;justify-content:center;background:rgba(2,6,23,0.6);z-index:60;padding:20px}
+    .modal.hidden{display:none}
+    .modal .card{max-width:720px;outline:none;padding:18px}
+
+    /* responsive */
+    @media (max-width:980px){
+      .grid{grid-template-columns: 1fr}
+      .controls-col{order:2}
+    }
+    @media (max-width:520px){
+      .logo{width:40px;height:40px}
+      h1{font-size:16px}
+      .playerHeading{font-size:16px}
+    }
+  </style>
+</head>
+<body data-theme="dark">
+  <div class="container">
+    <div class="card" role="region" aria-label="Quick Guess Duel">
+      <div class="header-row">
+        <div class="title">
+          <div class="logo">QG</div>
+          <div>
+            <h1>Quick Guess Duel</h1>
+            <div class="lead">Pass-and-play guessing — rounds & best-of modes • Hints: higher / lower</div>
+          </div>
+        </div>
+
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+          <div class="pill" role="group" aria-label="Theme selector">
+            <label class="small" style="margin:0 6px 0 0">Theme</label>
+            <select id="themeSelect" aria-label="Theme">
+              <option value="dark">Dark</option>
+              <option value="light">Light</option>
+            </select>
+          </div>
+
+          <div class="pill" title="Toggle sounds">
+            <label class="small" style="margin:0 6px 0 0">Sounds</label>
+            <input id="soundToggle" type="checkbox" aria-label="Enable sounds"/>
+          </div>
+
+          <button id="viewHS" class="btn btn-sm btn-ghost" style="padding:8px 10px">High Scores</button>
+        </div>
+      </div>
+
+      <!-- main grid -->
+      <div class="grid">
+        <!-- left: menu & setup -->
+        <div>
+          <div style="display:flex;gap:12px;align-items:flex-start;flex-wrap:wrap;margin-top:14px">
+            <div style="flex:1;min-width:180px">
+              <label class="small">Number of players</label>
+              <select id="playerCount" aria-label="Number of players">
+                <option value="2">2 players</option>
+                <option value="3">3 players</option>
+                <option value="4">4 players</option>
+              </select>
+            </div>
+
+            <div style="flex:1;min-width:180px">
+              <label class="small">Number range</label>
+              <select id="rangeSelect" aria-label="Number range">
+                <option value="10">1 — 10</option>
+                <option value="20">1 — 20</option>
+                <option value="50">1 — 50</option>
+                <option value="100">1 — 100</option>
+              </select>
+            </div>
+
+            <div style="min-width:140px">
+              <label class="small">Turn time</label>
+              <select id="timeSelect" aria-label="Turn time">
+                <option value="7">7s</option>
+                <option value="10">10s</option>
+                <option value="15">15s</option>
+                <option value="20">20s</option>
+              </select>
+            </div>
+          </div>
+
+          <div style="display:flex;gap:12px;align-items:center;margin-top:12px;flex-wrap:wrap">
+            <div style="flex:1;min-width:200px">
+              <label class="small">Game mode</label>
+              <select id="modeSelect" aria-label="Game Mode">
+                <option value="rounds">Rounds (N won rounds)</option>
+                <option value="bestof">Best of (first to majority)</option>
+              </select>
+            </div>
+
+            <div style="min-width:150px">
+              <label class="small" id="modeLabel">Rounds to win</label>
+              <input id="modeNumber" type="number" min="1" value="5" aria-label="Rounds or Best-of number" />
+            </div>
+
+            <div style="min-width:130px">
+              <label class="small">Demo</label>
+              <button id="demoBtn" class="btn btn-ghost">Auto-Play</button>
+            </div>
+          </div>
+
+          <div id="playersNames" style="margin-top:12px;display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px" aria-live="polite">
+            <!-- dynamic name inputs -->
+          </div>
+
+          <div style="display:flex;gap:10px;margin-top:14px;flex-wrap:wrap">
+            <button id="startBtn" class="btn">Start Game</button>
+            <button id="saveSettingsBtn" class="btn btn-ghost">Save Settings</button>
+            <button id="resetHS" class="btn btn-ghost">Clear High Scores</button>
+          </div>
+
+          <footer class="small">Tip: press Enter in the guess field to submit. Settings persist locally.</footer>
+        </div>
+
+        <!-- right: game panel -->
+        <aside class="controls-col">
+          <div class="card" style="padding:14px;">
+            <div class="game">
+              <div class="game-top">
+                <div>
+                  <div class="muted">Turn</div>
+                  <div id="playerTurnHeader" class="playerHeading">Player 1</div>
+                  <div id="roundsInfo" class="muted" style="margin-top:6px">Round 1</div>
+                </div>
+
+                <div style="text-align:center">
+                  <div class="muted">Time left</div>
+                  <div id="timerDisplay" class="timer" role="timer" aria-live="polite">10s</div>
+                </div>
+              </div>
+
+              <div>
+                <p class="muted" style="margin:8px 0 6px">Guess a number in the selected range</p>
+                <input id="guessInput" class="input-number" type="number" inputmode="numeric" aria-label="Guess number" min="1" />
+              </div>
+
+              <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
+                <button id="submitBtn" class="btn">Submit Guess</button>
+                <button id="passBtn" class="btn btn-ghost">End Turn</button>
+                <button id="endGameBtn" class="btn btn-ghost">End Game</button>
+              </div>
+
+              <div id="feedback" class="notice hidden" role="status" aria-live="polite"></div>
+              <div id="hint" class="hint hidden" aria-live="polite"></div>
+
+              <div class="scoreboard" aria-live="polite">
+                <h3 class="muted" style="margin:8px 0 6px">Scoreboard</h3>
+                <div id="scores"></div>
+
+                <div style="display:flex;gap:8px;margin-top:12px">
+                  <button id="menuBtn" class="btn btn-ghost">Back to Menu</button>
+                  <button id="resetScoreBtn" class="btn btn-ghost">Reset Scores</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- high scores quick view -->
+          <div class="card" style="padding:12px;">
+            <div style="display:flex;align-items:center;justify-content:space-between">
+              <div class="muted">High Scores</div>
+              <button id="openHSsmall" class="btn btn-ghost" style="padding:6px 8px">View</button>
+            </div>
+            <div id="hsPreview" class="muted" style="margin-top:10px;font-size:13px;max-height:110px;overflow:auto"></div>
+          </div>
+        </aside>
+      </div>
+    </div>
+
+    <!-- Winner modal -->
+    <div id="winnerModal" class="modal hidden" aria-hidden="true" role="dialog" aria-modal="true">
+      <div class="card" role="document" tabindex="-1">
+        <div style="text-align:center">
+          <div id="winnerText" style="font-weight:900;font-size:20px;color:var(--success)">Winner!</div>
+          <div id="winnerDetails" class="muted" style="margin-top:6px"></div>
+          <div style="margin-top:12px;display:flex;gap:10px;justify-content:center">
+            <button id="playAgainBtn" class="btn">Play Again</button>
+            <button id="saveHSBtn" class="btn btn-ghost">Save to High Scores</button>
+            <button id="closeWinner" class="btn btn-ghost">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Highscores modal -->
+    <div id="hsModal" class="modal hidden" aria-hidden="true" role="dialog" aria-modal="true">
+      <div class="card" role="document" tabindex="-1">
+        <h2 style="margin:0 0 6px">High Scores</h2>
+        <div id="hsList" class="muted" style="max-height:320px;overflow:auto"></div>
+        <div style="margin-top:10px;display:flex;justify-content:flex-end">
+          <button id="closeHS" class="btn btn-ghost">Close</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+<script>
+(() => {
+  // elements
+  const body = document.body;
+  const themeSelect = document.getElementById('themeSelect');
+  const soundToggle = document.getElementById('soundToggle');
+  const playerCountSel = document.getElementById('playerCount');
+  const playersNamesDiv = document.getElementById('playersNames');
+  const startBtn = document.getElementById('startBtn');
+  const demoBtn = document.getElementById('demoBtn');
+  const saveSettingsBtn = document.getElementById('saveSettingsBtn');
+  const resetHSBtn = document.getElementById('resetHS');
+  const viewHS = document.getElementById('viewHS');
+  const openHSsmall = document.getElementById('openHSsmall');
+
+  const modeSelect = document.getElementById('modeSelect');
+  const modeLabel = document.getElementById('modeLabel');
+  const modeNumber = document.getElementById('modeNumber');
+  const rangeSelect = document.getElementById('rangeSelect');
+  const timeSelect = document.getElementById('timeSelect');
+
+  const playerTurnHeader = document.getElementById('playerTurnHeader');
+  const timerDisplay = document.getElementById('timerDisplay');
+  const guessInput = document.getElementById('guessInput');
+  const submitBtn = document.getElementById('submitBtn');
+  const passBtn = document.getElementById('passBtn');
+  const endGameBtn = document.getElementById('endGameBtn');
+  const feedback = document.getElementById('feedback');
+  const hint = document.getElementById('hint');
+  const scoresDiv = document.getElementById('scores');
+  const roundsInfo = document.getElementById('roundsInfo');
+  const menuBtn = document.getElementById('menuBtn');
+  const resetScoreBtn = document.getElementById('resetScoreBtn');
+  const hsPreview = document.getElementById('hsPreview');
+
+  const winnerModal = document.getElementById('winnerModal');
+  const winnerText = document.getElementById('winnerText');
+  const winnerDetails = document.getElementById('winnerDetails');
+  const playAgainBtn = document.getElementById('playAgainBtn');
+  const saveHSBtn = document.getElementById('saveHSBtn');
+  const closeWinner = document.getElementById('closeWinner');
+
+  const hsModal = document.getElementById('hsModal');
+  const hsList = document.getElementById('hsList');
+  const closeHS = document.getElementById('closeHS');
+
+  const startStateKey = 'qgd_settings_v2';
+  const highsKey = 'qgd_highscores_v2';
+
+  // state
+  let players = [];
+  let currentPlayer = 0;
+  let randomNumber = 1;    // secret for the current round (kept until someone guesses)
+  let maxNumber = 10;
+  let turnTime = 10;
+  let timeLeft = 10;
+  let timerId = null;
+  let allowSubmit = true;
+  let demoInterval = null;
+  let totalAttempts = 0;      // total guesses across game
+  let roundsWon = 0;         // number of won rounds (i.e., secrets guessed)
+  let targetRounds = 5;
+  let mode = 'rounds'; // 'rounds' or 'bestof'
+  let bestOfNeeded = null;
+
+  // audio
+  let audioCtx = null;
+  try {
+    const AC = window.AudioContext || window.webkitAudioContext;
+    audioCtx = AC ? new AC() : null;
+  } catch(e){ audioCtx = null; }
+  function ensureAudioUnlocked(){
+    if(!audioCtx) return;
+    if(audioCtx.state === 'suspended') audioCtx.resume().catch(()=>{});
+  }
+  function beep(freq=440, dur=0.08, type='sine'){
+    if(!audioCtx || !soundToggle.checked) return;
+    try{
+      const o = audioCtx.createOscillator();
+      const g = audioCtx.createGain();
+      o.type = type; o.frequency.value = freq;
+      g.gain.value = 0.12;
+      o.connect(g); g.connect(audioCtx.destination);
+      o.start();
+      setTimeout(()=>{ try{ o.stop(); }catch(e){} }, dur*1000);
+    }catch(e){}
+  }
+
+  // utils
+  function $all(sel, root=document){ return Array.from((root||document).querySelectorAll(sel)); }
+  function escapeHtml(s){ return String(s).replace(/[&<>"']/g, c=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c])); }
+
+  function saveSettings(){
+    const st = {
+      theme: themeSelect.value,
+      sounds: !!soundToggle.checked,
+      playerCount: parseInt(playerCountSel.value,10),
+      names: $all('.pname').map(i=>i.value.trim()),
+      range: parseInt(rangeSelect.value,10),
+      time: parseInt(timeSelect.value,10),
+      mode: modeSelect.value,
+      modeNumber: parseInt(modeNumber.value,10)
+    };
+    try {
+      localStorage.setItem(startStateKey, JSON.stringify(st));
+      showTempFeedback('Settings saved', true);
+      renderHSPreview();
+    } catch(e){
+      showTempFeedback('Could not save settings', false);
+    }
+  }
+  function loadSettings(){
+    try {
+      const raw = localStorage.getItem(startStateKey);
+      return raw ? JSON.parse(raw) : null;
+    } catch(e){ return null; }
+  }
+  function getHighScores(){ try{ const raw = localStorage.getItem(highsKey); return raw?JSON.parse(raw):[] } catch(e){ return []; } }
+  function saveHighScores(list){ try{ localStorage.setItem(highsKey, JSON.stringify(list.slice(0,50))); }catch(e){} }
+  function addHighScore(entry){ const arr = getHighScores(); arr.unshift(entry); saveHighScores(arr.slice(0,50)); renderHSPreview(); }
+
+  // UI small helpers
+  let feedbackTimer = null;
+  function showTempFeedback(msg, ok){
+    clearTimeout(feedbackTimer);
+    feedback.classList.remove('hidden');
+    feedback.textContent = msg;
+    feedback.style.background = ok ? 'linear-gradient(90deg,#0b3b4b, rgba(34,197,94,0.06))' : 'rgba(0,0,0,0.18)';
+    feedbackTimer = setTimeout(()=> feedback.classList.add('hidden'), 1400);
+  }
+  function renderPlayerNameInputs(){
+    playersNamesDiv.innerHTML = '';
+    const cnt = Math.max(2, Math.min(4, parseInt(playerCountSel.value,10) || 2));
+    for(let i=0;i<cnt;i++){
+      const wrapper = document.createElement('div');
+      wrapper.innerHTML = `<label class="small">Player ${i+1} name</label>
+        <input maxlength="20" class="pname" data-idx="${i}" type="text" value="Player ${i+1}" aria-label="Player ${i+1} name" />`;
+      playersNamesDiv.appendChild(wrapper);
+    }
+  }
+  function createPlayersFromInputs(){
+    const names = $all('.pname').map(el => el.value.trim() || `Player ${Number(el.dataset.idx)+1}`);
+    players = names.map(n => ({ name: n, score: 0 }));
+  }
+  function renderScores(){
+    scoresDiv.innerHTML = '';
+    players.forEach((p,i) => {
+      const node = document.createElement('div');
+      node.className = 'player-line' + (i===currentPlayer ? ' active' : '');
+      node.innerHTML = `<div><div class="player-name">${escapeHtml(p.name)}</div><div class="muted">Player ${i+1}</div></div>
+                        <div style="text-align:right"><div style="font-weight:900">${p.score}</div></div>`;
+      scoresDiv.appendChild(node);
+    });
+  }
+  function applyTheme(){
+    body.setAttribute('data-theme', themeSelect.value === 'light' ? 'light' : 'dark');
+  }
+
+  // game core
+  function generateRandom(){
+    randomNumber = Math.floor(Math.random() * maxNumber) + 1;
+  }
+
+  function startTimer(){
+    clearTimer();
+    updateTimerDisplay();
+    timerId = setInterval(()=>{
+      timeLeft--;
+      updateTimerDisplay();
+      if(timeLeft <= 0){
+        beep(220,0.06,'square');
+        showTempFeedback('Time ran out', false);
+        // treat as passed attempt (no hint reveal or answer reveal)
+        rotateAfterAttempt({ revealHint:false });
+      }
+    }, 1000);
+  }
+  function clearTimer(){ if(timerId){ clearInterval(timerId); timerId = null; } }
+  function updateTimerDisplay(){ timerDisplay.textContent = `${timeLeft}s`; if(timeLeft<=3) timerDisplay.classList.add('warn'); else timerDisplay.classList.remove('warn'); }
+
+  function updateRoundInfo(){
+    if(mode === 'rounds'){
+      roundsInfo.textContent = `Round ${Math.min(roundsWon + 1, targetRounds)} / ${targetRounds}`;
+    } else {
+      roundsInfo.textContent = `First to ${bestOfNeeded} wins`;
+    }
+  }
+
+  function checkEndConditionAfterWin(){
+    if(mode === 'bestof'){
+      const winner = players.find(p => p.score >= bestOfNeeded);
+      return winner || null;
+    } else {
+      if(roundsWon >= targetRounds){
+        // game ends as soon as target reached
+        // highest score wins
+        const max = Math.max(...players.map(p=>p.score));
+        const winners = players.filter(p=>p.score===max);
+        return winners.length === 1 ? winners[0] : { tie:true, winners };
+      }
+      return null;
+    }
+  }
+
+  function showWinner(winnerName, detailText){
+    clearTimer();
+    winnerModal.classList.remove('hidden');
+    winnerModal.setAttribute('aria-hidden','false');
+    const card = winnerModal.querySelector('.card');
+    card && card.focus && card.focus();
+    if(Array.isArray(detailText)){
+      winnerText.textContent = 'Tie!';
+      winnerDetails.textContent = 'Tie between: ' + detailText.join(', ');
+      saveHSBtn.dataset.winner = detailText.join(', ');
+      saveHSBtn.dataset.note = 'Tie';
+    } else {
+      if(!winnerName){
+        winnerText.textContent = 'No winner';
+        winnerDetails.textContent = detailText || '';
+        saveHSBtn.dataset.winner = '';
+        saveHSBtn.dataset.note = detailText || '';
+      } else {
+        winnerText.textContent = `${winnerName} wins!`;
+        const p = players.find(x=>x.name===winnerName) || null;
+        winnerDetails.textContent = p ? `Score: ${p.score}` : (detailText || '');
+        saveHSBtn.dataset.winner = winnerName;
+        saveHSBtn.dataset.note = p ? `Score ${p.score}` : (detailText || '');
+      }
+    }
+  }
+
+  function hideWinnerModal(){ winnerModal.classList.add('hidden'); winnerModal.setAttribute('aria-hidden','true'); }
+
+  // rotate to next player after an attempt that does NOT end the round
+  function rotateAfterAttempt({ revealHint = false, hintText = '', pause = 700 } = {}){
+    clearTimer();
+    allowSubmit = false;
+    if(revealHint){
+      hint.classList.remove('hidden');
+      hint.textContent = hintText;
+      beep(360,0.06,'square');
+    } else {
+      hint.classList.add('hidden');
+      hint.textContent = '';
+    }
+
+    setTimeout(()=>{
+      // move to next player
+      currentPlayer = (currentPlayer + 1) % players.length;
+      totalAttempts++;
+      renderScores();
+      playerTurnHeader.textContent = players[currentPlayer].name + "'s Turn";
+      guessInput.value = '';
+      hint.classList.add('hidden');
+      allowSubmit = true;
+      timeLeft = turnTime;
+      updateRoundInfo();
+      startTimer();
+    }, pause);
+  }
+
+  // start a new round: generate secret and notify (no reveal)
+  function startNewRound(startingPlayerIndex = null){
+    roundsWon = roundsWon; // unchanged; roundsWon increments only on wins
+    if(typeof startingPlayerIndex === 'number') currentPlayer = startingPlayerIndex % players.length;
+    generateRandom();
+    timeLeft = turnTime;
+    allowSubmit = true;
+    renderScores();
+    playerTurnHeader.textContent = players[currentPlayer].name + "'s Turn";
+    guessInput.value = '';
+    hint.classList.add('hidden');
+    updateRoundInfo();
+    startTimer();
+  }
+
+  // core submit logic
+  function doSubmit(){
+    if(!allowSubmit) return;
+    const raw = String(guessInput.value).trim();
+    if(raw === ''){
+      showTempFeedback('Please enter a number', false);
+      return;
+    }
+    const guessed = Number(raw);
+    if(!Number.isInteger(guessed) || guessed < 1 || guessed > maxNumber){
+      showTempFeedback(`Enter whole number 1–${maxNumber}`, false);
+      return;
+    }
+
+    // lock the input while processing
+    allowSubmit = false;
+    clearTimer();
+
+    if(guessed === randomNumber){
+      // CORRECT: award point, increment roundsWon, reveal and then start next round (or end game)
+      players[currentPlayer].score += 1;
+      roundsWon += 1;
+      renderScores();
+      hint.classList.remove('hidden');
+      hint.textContent = `Correct! Answer: ${randomNumber} — +1 point`;
+      beep(880,0.12,'sine');
+
+      // check end condition immediately after awarding
+      const end = checkEndConditionAfterWin();
+      if(end){
+        // game ends
+        setTimeout(()=>{
+          if(end.tie) showWinner(null, end.winners.map(w=>w.name));
+          else showWinner(end.name, `Score: ${end.score}`);
+        }, 900);
+      } else {
+        // start a new round after short pause. start next round with next player
+        setTimeout(()=>{
+          // next player starts next round
+          currentPlayer = (currentPlayer + 1) % players.length;
+          startNewRound(currentPlayer);
+        }, 900);
+      }
+    } else {
+      // WRONG: give higher/lower hint but DO NOT reveal the secret. rotate to next player.
+      const hintText = guessed < randomNumber ? 'Higher' : 'Lower';
+      showTempFeedback(`Wrong — ${hintText}`, false);
+      rotateAfterAttempt({ revealHint: true, hintText });
+    }
+  }
+
+  // pass (end turn) -> no hint, no reveal, rotate
+  function passTurn(){
+    if(!allowSubmit) return;
+    clearTimer();
+    allowSubmit = false;
+    showTempFeedback('Turn passed', false);
+    rotateAfterAttempt({ revealHint: false, pause: 500 });
+  }
+
+  // demo autoplay (for testing)
+  function startDemo(){
+    stopDemo();
+    demoInterval = setInterval(()=>{
+      if(!allowSubmit) return;
+      const doCorrect = Math.random() < 0.28;
+      if(doCorrect) guessInput.value = randomNumber;
+      else {
+        let g = Math.floor(Math.random() * maxNumber) + 1;
+        if(g === randomNumber) g = (g % maxNumber) + 1;
+        guessInput.value = g;
+      }
+      doSubmit();
+    }, 800);
+    showTempFeedback('Demo started', true);
+  }
+  function stopDemo(){ if(demoInterval){ clearInterval(demoInterval); demoInterval = null; } }
+
+  // highscores UI
+  function openHighScores(){
+    hsModal.classList.remove('hidden'); hsModal.setAttribute('aria-hidden','false');
+    const hs = getHighScores();
+    if(hs.length === 0){
+      hsList.innerHTML = '<div class="muted">No high scores yet — be the first!</div>';
+      return;
+    }
+    hsList.innerHTML = hs.map(h => {
+      const dt = new Date(h.when).toLocaleString();
+      return `<div style="padding:8px;border-bottom:1px solid rgba(0,0,0,0.06)"><div style="font-weight:800">${escapeHtml(h.winner)}</div><div class="muted">${escapeHtml(h.note)} • ${escapeHtml(h.mode)} • range ${h.maxNumber} • ${dt}</div></div>`;
+    }).join('');
+    try { closeHS.focus(); }catch(e){}
+  }
+  function hideHSModal(){ hsModal.classList.add('hidden'); hsModal.setAttribute('aria-hidden','true'); }
+
+  function clearHighScores(){
+    if(confirm('Clear all saved high scores?')){
+      localStorage.removeItem(highsKey);
+      showTempFeedback('High scores cleared', true);
+      renderHSPreview();
+      hideHSModal();
+    }
+  }
+
+  function saveWinnerToHS(){
+    ensureAudioUnlocked();
+    const winnerName = saveHSBtn.dataset.winner || '';
+    const note = saveHSBtn.dataset.note || 'Winner';
+    if(!winnerName) { showTempFeedback('No winner to save', false); return; }
+    const entry = { when: Date.now(), winner: winnerName, note, mode: modeSelect.value || mode, maxNumber, turnTime };
+    addHighScore(entry);
+    showTempFeedback('High score saved', true);
+  }
+
+  // small highscore preview
+  function renderHSPreview(){
+    const hs = getHighScores().slice(0,4);
+    if(hs.length === 0){
+      hsPreview.textContent = 'No high scores yet';
+      return;
+    }
+    hsPreview.innerHTML = hs.map(h => `${escapeHtml(h.winner)} · ${escapeHtml(h.note)} · ${h.maxNumber}`).join('<br>');
+  }
+
+  // events wiring
+  playerCountSel.addEventListener('change', renderPlayerNameInputs);
+  modeSelect.addEventListener('change', ()=>{
+    mode = modeSelect.value;
+    modeLabel.textContent = mode === 'bestof' ? 'Best-of (odd number recommended)' : 'Rounds to win';
+  });
+  modeNumber.addEventListener('input', ()=>{
+    if(Number(modeNumber.value) < 1) modeNumber.value = 1;
+  });
+
+  startBtn.addEventListener('click', ()=>{
+    ensureAudioUnlocked();
+    createPlayersFromInputs();
+    if(players.length < 2){ showTempFeedback('At least 2 players required', false); return; }
+    maxNumber = parseInt(rangeSelect.value,10) || 10;
+    turnTime = parseInt(timeSelect.value,10) || 10;
+    mode = modeSelect.value;
+    let mn = Math.max(1, parseInt(modeNumber.value,10) || 1);
+    if(mode === 'bestof'){
+      if(mn % 2 === 0) mn += 1; // make odd
+      bestOfNeeded = Math.ceil(mn / 2);
+      modeNumber.value = mn;
+    } else {
+      targetRounds = mn;
+      bestOfNeeded = null;
+    }
+
+    // reset state
+    players.forEach(p=>p.score=0);
+    currentPlayer = 0;
+    roundsWon = 0;
+    totalAttempts = 0;
+    maxNumber = parseInt(rangeSelect.value,10) || 10;
+    // initial secret for round
+    generateRandom();
+    applyTheme();
+    renderScores();
+    updateRoundInfo();
+    // set guess input bounds
+    guessInput.max = String(maxNumber);
+    guessInput.placeholder = `1 — ${maxNumber}`;
+    try { guessInput.focus({preventScroll:true}); } catch(e){ guessInput.focus(); }
+    timeLeft = turnTime;
+    allowSubmit = true;
+    startTimer();
+  });
+
+  demoBtn.addEventListener('click', ()=>{
+    ensureAudioUnlocked();
+    if(demoInterval) { stopDemo(); showTempFeedback('Demo stopped', true); }
+    else {
+      createPlayersFromInputs();
+      players.forEach(p=>p.score=0);
+      currentPlayer = 0;
+      roundsWon = 0;
+      maxNumber = parseInt(rangeSelect.value,10) || 10;
+      generateRandom();
+      renderScores();
+      startTimer();
+      startDemo();
+    }
+  });
+
+  saveSettingsBtn.addEventListener('click', saveSettings);
+  resetHSBtn.addEventListener('click', clearHighScores);
+  viewHS.addEventListener('click', openHighScores);
+  openHSsmall.addEventListener('click', openHighScores);
+
+  submitBtn.addEventListener('click', doSubmit);
+  passBtn.addEventListener('click', passTurn);
+  endGameBtn.addEventListener('click', ()=>{ if(confirm('End game early?')) {
+    // Decide winner now
+    const max = Math.max(...players.map(p=>p.score));
+    const winners = players.filter(p=>p.score===max);
+    if(winners.length===1) showWinner(winners[0].name, `Score: ${winners[0].score}`);
+    else showWinner(null, winners.map(w=>w.name));
+  }});
+
+  menuBtn.addEventListener('click', ()=>{ if(confirm('Return to menu? Current game will stop.')) { clearTimer(); stopDemo(); renderPlayerNameInputs(); renderHSPreview(); } });
+  resetScoreBtn.addEventListener('click', ()=>{ if(confirm('Reset scores?')) { players.forEach(p=>p.score=0); renderScores(); showTempFeedback('Scores reset', true); } });
+
+  playAgainBtn.addEventListener('click', ()=>{
+    players.forEach(p=>p.score=0);
+    roundsWon = 0; currentPlayer = 0; totalAttempts = 0;
+    hideWinnerModal();
+    renderScores();
+    generateRandom();
+    updateRoundInfo();
+    timeLeft = turnTime;
+    allowSubmit = true;
+    startTimer();
+  });
+  saveHSBtn.addEventListener('click', saveWinnerToHS);
+  closeWinner.addEventListener('click', hideWinnerModal);
+
+  closeHS.addEventListener('click', hideHSModal);
+
+  // keyboard accessibility
+  guessInput.addEventListener('keydown', (e)=>{ if(e.key === 'Enter'){ e.preventDefault(); doSubmit(); } });
+  document.addEventListener('keydown', (e)=>{ if(e.key === 'Escape'){ if(!winnerModal.classList.contains('hidden')) hideWinnerModal(); if(!hsModal.classList.contains('hidden')) hideHSModal(); } });
+
+  // theme listener
+  themeSelect.addEventListener('change', applyTheme);
+
+  // keep guessInput.max in sync
+  rangeSelect.addEventListener('change', ()=>{
+    maxNumber = parseInt(rangeSelect.value,10) || 10;
+    guessInput.max = String(maxNumber);
+    guessInput.placeholder = `1 — ${maxNumber}`;
+  });
+
+  // clicking outside modals closes them
+  [winnerModal, hsModal].forEach(mod => {
+    mod.addEventListener('click', (ev) => { if(ev.target === mod){ mod.classList.add('hidden'); mod.setAttribute('aria-hidden','true'); }});
+  });
+
+  // initial setup
+  renderPlayerNameInputs();
+  const loaded = loadSettings();
+  if(loaded){ 
+    // apply loaded preferences (but don't auto-start a game)
+    themeSelect.value = loaded.theme || 'dark';
+    soundToggle.checked = !!loaded.sounds;
+    playerCountSel.value = loaded.playerCount || 2;
+    rangeSelect.value = loaded.range || 10;
+    timeSelect.value = loaded.time || 10;
+    modeSelect.value = loaded.mode || 'rounds';
+    modeNumber.value = loaded.modeNumber || 5;
+    renderPlayerNameInputs();
+    const els = $all('.pname'); els.forEach((el,i)=> { if(loaded.names && loaded.names[i]) el.value = loaded.names[i]; });
+    applyTheme();
+  } else { applyTheme(); }
+
+  renderHSPreview();
+
+  // expose small debug
+  window.QGD = { getHighScores, saveSettings, loadSettings, startDemo, stopDemo };
+
+})();
+</script>
+</body>
+</html>

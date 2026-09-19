@@ -1,817 +1,1087 @@
 <!doctype html>
 <html lang="en">
-<head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>⚡ Quick Guess Duel — Full</title>
-  <style>
-    :root{
-      --bg1:#0f172a; --bg2:#0b1220; --card:#0b1226; --muted:#99a6bf; --accent:#60a5fa; --glass: rgba(255,255,255,0.03);
-      --text:#e6eef8; --ink:#dbeafe; --success:#7ee4a2; --danger:#fb7185;
-      --radius:14px;
-      --shadow: 0 10px 30px rgba(2,6,23,0.6);
-    }
-    [data-theme="light"]{
-      --bg1:#eef2ff; --bg2:#f8fafc; --card:#ffffff; --muted:#475569; --accent:#0ea5a4; --glass: rgba(2,6,23,0.03);
-      --text:#0b1220; --ink:#0b1220; --success:#059669; --danger:#dc2626;
-      --shadow: 0 8px 18px rgba(3,10,34,0.06);
-    }
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PokeVerse | The Ultimate Pokémon Fan Hub</title>
+    <meta
+      name="description"
+      content="PokeVerse is a vibrant Pokémon fan website with a Pokédex, type guide, trainer team builder, and Pokémon inspiration." 
+    />
+    <style>
+      :root {
+        --bg: #0a1021;
+        --bg-soft: #121d35;
+        --panel: rgba(18, 30, 53, 0.8);
+        --panel-strong: rgba(15, 22, 38, 0.95);
+        --line: rgba(255, 255, 255, 0.08);
+        --text: #edf4ff;
+        --muted: #a9bad8;
+        --primary: #ffcb05;
+        --primary-2: #ff7f50;
+        --fire: #f97316;
+        --water: #38bdf8;
+        --grass: #4ade80;
+        --electric: #facc15;
+        --psychic: #c084fc;
+        --bug: #84cc16;
+        --rock: #c084fc;
+        --ground: #d97706;
+        --steel: #94a3b8;
+        --fairy: #f9a8d4;
+        --shadow: 0 24px 60px rgba(12, 18, 32, 0.45);
+        --radius: 24px;
+      }
 
-    html,body{height:100%;margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial;color:var(--text);-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;}
-    body{
-      background:linear-gradient(160deg,var(--bg1) 0%, var(--bg2) 100%);
-      display:flex;align-items:center;justify-content:center;padding:28px;
-    }
+      * { box-sizing: border-box; }
 
-    .container{width:100%;max-width:1100px;padding:12px}
-    .card{
-      background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
-      border-radius:var(--radius);padding:20px;box-shadow:var(--shadow);
-      color:var(--text);
-    }
+      html { scroll-behavior: smooth; }
 
-    /* Header */
-    .header-row{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
-    .title {
-      display:flex;gap:12px;align-items:center;
-    }
-    .logo {
-      width:44px;height:44px;border-radius:10px;background:linear-gradient(135deg,var(--accent),#8b5cf6);display:flex;align-items:center;justify-content:center;font-weight:800;color:#031025;box-shadow:0 6px 18px rgba(2,6,23,0.35);
-    }
-    h1{margin:0;font-size:18px;color:var(--ink)}
-    .lead{margin:0;color:var(--muted);font-size:13px}
+      body {
+        margin: 0;
+        font-family: Inter, "Segoe UI", Roboto, sans-serif;
+        background:
+          radial-gradient(circle at top left, rgba(255, 203, 5, 0.15), transparent 30%),
+          radial-gradient(circle at bottom right, rgba(56, 189, 248, 0.15), transparent 30%),
+          linear-gradient(180deg, #08111d 0%, #101a2f 100%);
+        color: var(--text);
+      }
 
-    /* layout */
-    .grid{display:grid;grid-template-columns: 1fr 360px;gap:18px;margin-top:16px}
-    .controls-col{display:flex;flex-direction:column;gap:12px}
-    .row{display:flex;gap:12px;flex-wrap:wrap}
-    .col{flex:1;min-width:140px}
-    label.small{display:block;font-size:12px;color:var(--muted);margin-bottom:6px}
-    input[type="text"], input[type="number"], select, button{
-      width:100%;padding:10px;border-radius:12px;border:1px solid rgba(255,255,255,0.04);
-      background:transparent;color:inherit;font-size:14px;outline:none;
-    }
-    select { cursor:pointer; }
-    input[type="number"]::-webkit-outer-spin-button, input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
-    .btn{display:inline-block;background:var(--accent);color:#021023;padding:10px 12px;border-radius:12px;font-weight:700;border:none;cursor:pointer;}
-    .btn.ghost{background:transparent;color:var(--accent);border:1px solid rgba(255,255,255,0.06)}
-    .pill{display:inline-flex;align-items:center;gap:8px;padding:6px 10px;border-radius:999px;background:var(--glass)}
-    .muted{font-size:13px;color:var(--muted)}
-    footer.small{margin-top:10px;font-size:12px;color:var(--muted)}
+      a { color: inherit; text-decoration: none; }
+      img { max-width: 100%; display: block; }
 
-    /* game area */
-    .game {
-      display:flex;flex-direction:column;gap:12px;
-    }
-    .game-top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
-    .playerHeading{font-weight:800;font-size:18px}
-    .timer{font-weight:800;font-size:18px;padding:8px 12px;border-radius:12px;background:var(--glass);color:var(--accent)}
-    .timer.warn{color:var(--danger)}
-    .input-number{width:100%;padding:12px;border-radius:12px;border:1px solid rgba(255,255,255,0.04);font-size:18px;text-align:center;background:transparent}
-    .notice{margin-top:8px;padding:8px;border-radius:10px;background:rgba(0,0,0,0.18);font-weight:700}
-    .hint{margin-top:8px;padding:10px;border-radius:10px;background:linear-gradient(90deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));font-weight:700}
-    .scoreboard{border-top:1px dashed rgba(255,255,255,0.04);padding-top:12px}
-    .player-line{display:flex;justify-content:space-between;align-items:center;padding:8px 6px;border-radius:10px}
-    .player-line.active{background:linear-gradient(90deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));box-shadow:inset 0 0 0 1px rgba(255,255,255,0.01)}
-    .player-name{font-weight:700}
-    .controls{display:flex;gap:10px;flex-wrap:wrap}
+      .container {
+        width: min(1200px, calc(100% - 32px));
+        margin: 0 auto;
+      }
 
-    /* modals */
-    .modal{position:fixed;left:0;top:0;right:0;bottom:0;display:flex;align-items:center;justify-content:center;background:rgba(2,6,23,0.6);z-index:60;padding:20px}
-    .modal.hidden{display:none}
-    .modal .card{max-width:720px;outline:none;padding:18px}
+      .site-header {
+        position: sticky;
+        top: 0;
+        z-index: 50;
+        backdrop-filter: blur(14px);
+        background: rgba(8, 17, 29, 0.68);
+        border-bottom: 1px solid var(--line);
+      }
 
-    /* responsive */
-    @media (max-width:980px){
-      .grid{grid-template-columns: 1fr}
-      .controls-col{order:2}
-    }
-    @media (max-width:520px){
-      .logo{width:40px;height:40px}
-      h1{font-size:16px}
-      .playerHeading{font-size:16px}
-    }
-  </style>
-</head>
-<body data-theme="dark">
-  <div class="container">
-    <div class="card" role="region" aria-label="Quick Guess Duel">
-      <div class="header-row">
-        <div class="title">
-          <div class="logo">QG</div>
+      .nav {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 20px;
+        padding: 16px 0;
+      }
+
+      .brand {
+        display: inline-flex;
+        align-items: center;
+        gap: 12px;
+        font-weight: 800;
+        letter-spacing: 0.04em;
+      }
+
+      .brand-mark {
+        width: 40px;
+        height: 40px;
+        border-radius: 14px;
+        background: linear-gradient(135deg, var(--primary), #ff8a3d);
+        display: grid;
+        place-items: center;
+        box-shadow: 0 12px 28px rgba(255, 161, 85, 0.35);
+        font-size: 1.3rem;
+      }
+
+      .nav-links {
+        display: flex;
+        align-items: center;
+        gap: 24px;
+        color: var(--muted);
+        font-size: 0.95rem;
+      }
+
+      .nav-cta {
+        padding: 12px 18px;
+        border-radius: 14px;
+        color: #0d1a2a;
+        font-weight: 800;
+        background: linear-gradient(135deg, var(--primary), #ffd84c);
+      }
+
+      .hero {
+        padding: 52px 0 28px;
+      }
+
+      .hero-grid {
+        display: grid;
+        grid-template-columns: 1.1fr 0.9fr;
+        gap: 26px;
+        align-items: center;
+      }
+
+      .eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 12px;
+        border-radius: 999px;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        background: rgba(255, 255, 255, 0.03);
+        font-size: 0.8rem;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--primary);
+      }
+
+      h1 {
+        margin: 18px 0 16px;
+        font-size: clamp(2.6rem, 5vw, 5rem);
+        line-height: 0.95;
+        letter-spacing: -0.05em;
+      }
+
+      .gradient-text {
+        background: linear-gradient(135deg, #ffe082 0%, #ff9d5c 30%, #8ac8ff 100%);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+      }
+
+      .subtitle {
+        max-width: 620px;
+        color: var(--muted);
+        font-size: 1.08rem;
+        line-height: 1.7;
+      }
+
+      .hero-actions {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 14px;
+        margin: 26px 0 30px;
+      }
+
+      .button {
+        border: none;
+        border-radius: 14px;
+        padding: 15px 22px;
+        font: inherit;
+        font-weight: 800;
+        cursor: pointer;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+      }
+
+      .button:hover { transform: translateY(-1px); }
+
+      .button.primary {
+        background: linear-gradient(135deg, var(--primary), #ff944d);
+        color: #101827;
+        box-shadow: 0 18px 34px rgba(255, 180, 80, 0.28);
+      }
+
+      .button.secondary {
+        background: rgba(255, 255, 255, 0.04);
+        color: var(--text);
+        border: 1px solid var(--line);
+      }
+
+      .stats {
+        display: flex;
+        gap: 20px;
+        flex-wrap: wrap;
+      }
+
+      .stat {
+        min-width: 120px;
+      }
+
+      .stat strong {
+        display: block;
+        font-size: 1.5rem;
+        margin-bottom: 6px;
+      }
+
+      .stat span {
+        color: var(--muted);
+        font-size: 0.9rem;
+      }
+
+      .hero-card {
+        position: relative;
+        background: linear-gradient(160deg, rgba(17, 23, 38, 0.9), rgba(25, 39, 65, 0.8));
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        padding: 20px;
+      }
+
+      .spotlight-wrap {
+        position: relative;
+        min-height: 520px;
+        border-radius: 26px;
+        overflow: hidden;
+        background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.01));
+      }
+
+      .spotlight-bg {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(180deg, rgba(255, 132, 72, 0.18), rgba(24, 38, 60, 0.22));
+      }
+
+      .spotlight-glow {
+        position: absolute;
+        width: 220px;
+        height: 220px;
+        background: radial-gradient(circle, rgba(255, 192, 74, 0.35), rgba(255, 192, 74, 0));
+        border-radius: 50%;
+        right: -30px;
+        top: -20px;
+      }
+
+      .spotlight-content {
+        position: relative;
+        z-index: 1;
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        justify-content: space-between;
+      }
+
+      .spotlight-badge {
+        display: inline-flex;
+        align-self: flex-start;
+        padding: 8px 12px;
+        border-radius: 999px;
+        background: rgba(12, 18, 29, 0.7);
+        border: 1px solid rgba(255,255,255,0.08);
+        margin: 18px;
+        font-weight: 700;
+      }
+
+      .pokemon-art {
+        margin: 0 auto;
+        width: min(100%, 370px);
+        filter: drop-shadow(0 25px 36px rgba(255, 166, 78, 0.25));
+      }
+
+      .spotlight-meta {
+        padding: 18px;
+      }
+
+      .meta-top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+      }
+
+      .meta-name {
+        margin: 0;
+        font-size: clamp(2rem, 3vw, 2.7rem);
+        letter-spacing: -0.04em;
+      }
+
+      .meta-id {
+        color: var(--muted);
+        font-weight: 700;
+      }
+
+      .pill-row {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-top: 14px;
+      }
+
+      .type-pill {
+        display: inline-flex;
+        align-items: center;
+        padding: 7px 12px;
+        border-radius: 999px;
+        font-size: 0.8rem;
+        font-weight: 700;
+        border: 1px solid transparent;
+      }
+
+      .section {
+        padding: 28px 0 10px;
+      }
+
+      .section-head {
+        display: flex;
+        align-items: end;
+        justify-content: space-between;
+        gap: 14px;
+        margin-bottom: 24px;
+      }
+
+      .section-head h2 {
+        margin: 0;
+        font-size: clamp(1.8rem, 2.5vw, 2.6rem);
+        letter-spacing: -0.04em;
+      }
+
+      .section-head p {
+        margin: 0;
+        color: var(--muted);
+      }
+
+      .tool-panel {
+        background: rgba(12, 18, 29, 0.7);
+        border: 1px solid var(--line);
+        border-radius: 24px;
+        padding: 16px;
+        box-shadow: var(--shadow);
+      }
+
+      .controls {
+        display: grid;
+        grid-template-columns: minmax(0, 1.4fr) minmax(160px, 0.5fr) auto;
+        gap: 12px;
+        align-items: center;
+      }
+
+      .input-wrap {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        background: rgba(255,255,255,0.02);
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        padding: 14px 16px;
+      }
+
+      .input-wrap input,
+      .input-wrap select {
+        width: 100%;
+        background: transparent;
+        border: none;
+        outline: none;
+        color: var(--text);
+        font: inherit;
+      }
+
+      .input-wrap input::placeholder { color: var(--muted); }
+
+      .search-button {
+        padding: 15px 18px;
+        border-radius: 14px;
+        border: none;
+        background: linear-gradient(135deg, #38bdf8, #7c3aed);
+        color: white;
+        font-weight: 800;
+        cursor: pointer;
+      }
+
+      .pokemon-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 18px;
+        margin-top: 22px;
+      }
+
+      .pokemon-card {
+        position: relative;
+        background: linear-gradient(180deg, rgba(16, 23, 38, 0.9), rgba(17, 28, 45, 0.88));
+        border: 1px solid var(--line);
+        border-radius: 22px;
+        padding: 16px;
+        overflow: hidden;
+        transition: transform 0.2s ease, border-color 0.2s ease;
+      }
+
+      .pokemon-card:hover {
+        transform: translateY(-4px);
+        border-color: rgba(255, 255, 255, 0.2);
+      }
+
+      .pokemon-card::before {
+        content: "";
+        position: absolute;
+        inset: 0 0 auto;
+        height: 74px;
+        background: linear-gradient(90deg, rgba(255,255,255,0.06), rgba(255,255,255,0));
+      }
+
+      .pokemon-card .top {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        position: relative;
+        z-index: 1;
+      }
+
+      .pokemon-card .dex-id {
+        color: var(--muted);
+        font-size: 0.8rem;
+        font-weight: 700;
+      }
+
+      .favorite-toggle {
+        background: rgba(255,255,255,0.04);
+        border: 1px solid var(--line);
+        color: #ffd7a8;
+        font-size: 1.1rem;
+        width: 34px;
+        height: 34px;
+        border-radius: 50%;
+        cursor: pointer;
+      }
+
+      .pokemon-card img {
+        width: 120px;
+        height: 120px;
+        object-fit: contain;
+        margin: 12px auto 10px;
+      }
+
+      .pokemon-card h3 {
+        margin: 0 0 8px;
+        text-transform: capitalize;
+        font-size: 1.3rem;
+      }
+
+      .pokemon-card .sub {
+        color: var(--muted);
+        font-size: 0.88rem;
+        margin-bottom: 12px;
+      }
+
+      .type-row {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+
+      .type-pill.fire { background: rgba(249, 115, 22, 0.16); color: #fdba74; border-color: rgba(249, 115, 22, 0.4); }
+      .type-pill.water { background: rgba(56, 189, 248, 0.16); color: #7dd3fc; border-color: rgba(56, 189, 248, 0.4); }
+      .type-pill.grass { background: rgba(74, 222, 128, 0.16); color: #86efac; border-color: rgba(74, 222, 128, 0.4); }
+      .type-pill.electric { background: rgba(250, 204, 21, 0.16); color: #facc15; border-color: rgba(250, 204, 21, 0.4); }
+      .type-pill.psychic { background: rgba(192, 132, 252, 0.16); color: #d8b4fe; border-color: rgba(192, 132, 252, 0.4); }
+      .type-pill.bug { background: rgba(132, 204, 22, 0.16); color: #bef264; border-color: rgba(132, 204, 22, 0.4); }
+      .type-pill.rock { background: rgba(148, 163, 184, 0.16); color: #cbd5e1; border-color: rgba(148, 163, 184, 0.4); }
+      .type-pill.ground { background: rgba(217, 119, 6, 0.16); color: #fbbf24; border-color: rgba(217, 119, 6, 0.4); }
+      .type-pill.steel { background: rgba(148, 163, 184, 0.2); color: #e2e8f0; border-color: rgba(148, 163, 184, 0.4); }
+      .type-pill.fairy { background: rgba(249, 168, 212, 0.16); color: #fbcfe8; border-color: rgba(249, 168, 212, 0.4); }
+      .type-pill.normal { background: rgba(148, 163, 184, 0.12); color: #e2e8f0; border-color: rgba(148, 163, 184, 0.38); }
+      .type-pill.flying { background: rgba(96, 165, 250, 0.12); color: #bfdbfe; border-color: rgba(96, 165, 250, 0.38); }
+      .type-pill.poison { background: rgba(168, 85, 247, 0.16); color: #d8b4fe; border-color: rgba(168, 85, 247, 0.4); }
+      .type-pill.ice { background: rgba(125, 211, 252, 0.16); color: #bae6fd; border-color: rgba(125, 211, 252, 0.4); }
+      .type-pill.dragon { background: rgba(99, 102, 241, 0.16); color: #c7d2fe; border-color: rgba(99, 102, 241, 0.4); }
+      .type-pill.dark { background: rgba(51, 65, 85, 0.5); color: #e2e8f0; border-color: rgba(148, 163, 184, 0.3); }
+
+      .feature-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 18px;
+        margin-top: 18px;
+      }
+
+      .feature {
+        background: rgba(12, 18, 29, 0.7);
+        border: 1px solid var(--line);
+        border-radius: 22px;
+        padding: 20px;
+      }
+
+      .feature-icon {
+        width: 52px;
+        height: 52px;
+        display: grid;
+        place-items: center;
+        border-radius: 14px;
+        font-size: 1.6rem;
+        background: linear-gradient(135deg, rgba(255, 204, 76, 0.16), rgba(56, 189, 248, 0.12));
+        margin-bottom: 16px;
+      }
+
+      .feature h3 {
+        margin: 0 0 8px;
+        font-size: 1.2rem;
+      }
+
+      .feature p {
+        margin: 0;
+        color: var(--muted);
+        line-height: 1.6;
+      }
+
+      .team-layout {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 24px;
+        margin-top: 18px;
+      }
+
+      .team-card {
+        background: rgba(12, 18, 29, 0.72);
+        border: 1px solid var(--line);
+        border-radius: 24px;
+        padding: 22px;
+      }
+
+      .team-list {
+        display: grid;
+        gap: 14px;
+        margin-top: 16px;
+      }
+
+      .team-member {
+        display: grid;
+        grid-template-columns: 78px 1fr auto;
+        align-items: center;
+        gap: 14px;
+        background: rgba(255,255,255,0.02);
+        border: 1px solid var(--line);
+        border-radius: 18px;
+        padding: 10px 12px;
+      }
+
+      .team-member img {
+        width: 62px;
+        height: 62px;
+        object-fit: contain;
+        margin: 0 auto;
+      }
+
+      .team-member h4 {
+        margin: 0;
+        text-transform: capitalize;
+      }
+
+      .team-member .mini {
+        color: var(--muted);
+        font-size: 0.75rem;
+      }
+
+      .team-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: rgba(255, 203, 5, 0.14);
+        color: var(--primary);
+        font-size: 1.1rem;
+      }
+
+      .battle-box {
+        display: grid;
+        gap: 12px;
+      }
+
+      .battle-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        background: rgba(255,255,255,0.02);
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        padding: 12px 14px;
+      }
+
+      .battle-row strong { font-size: 0.96rem; }
+      .battle-row span { color: var(--muted); }
+
+      footer {
+        padding: 40px 0 70px;
+        color: var(--muted);
+      }
+
+      .footer-shell {
+        border-top: 1px solid var(--line);
+        padding-top: 22px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+
+      @media (max-width: 900px) {
+        .hero-grid,
+        .team-layout,
+        .controls {
+          grid-template-columns: 1fr;
+        }
+
+        .nav-links {
+          display: none;
+        }
+      }
+
+      @media (max-width: 560px) {
+        .hero {
+          padding-top: 34px;
+        }
+
+        .section-head {
+          align-items: flex-start;
+          flex-direction: column;
+        }
+
+        .hero-actions {
+          flex-direction: column;
+          align-items: stretch;
+        }
+
+        .button {
+          width: 100%;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="container nav">
+        <a class="brand" href="#top" aria-label="PokeVerse home">
+          <span class="brand-mark">⚡</span>
+          <span>POKEVERSE</span>
+        </a>
+
+        <nav class="nav-links" aria-label="Main navigation">
+          <a href="#pokedex">Pokédex</a>
+          <a href="#types">Types</a>
+          <a href="#team">Team Builder</a>
+          <a href="#features">Features</a>
+        </nav>
+
+        <a class="nav-cta" href="#pokedex">Catch them all</a>
+      </div>
+    </header>
+
+    <main id="top" class="container">
+      <section class="hero">
+        <div class="hero-grid">
           <div>
-            <h1>Quick Guess Duel</h1>
-            <div class="lead">Pass-and-play guessing — rounds & best-of modes • Hints: higher / lower</div>
-          </div>
-        </div>
+            <span class="eyebrow">Welcome to the world of Pokémon</span>
+            <h1>
+              Discover the <span class="gradient-text">next legend</span>
+              in your pocket.
+            </h1>
+            <p class="subtitle">
+              Explore fan-favorite monsters, build your dream battle squad, and uncover the best Pokémon matches for your style.
+              PokeVerse is made for trainers who live for epic duels, rare finds, and the thrill of the catch.
+            </p>
 
-        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-          <div class="pill" role="group" aria-label="Theme selector">
-            <label class="small" style="margin:0 6px 0 0">Theme</label>
-            <select id="themeSelect" aria-label="Theme">
-              <option value="dark">Dark</option>
-              <option value="light">Light</option>
-            </select>
-          </div>
-
-          <div class="pill" title="Toggle sounds">
-            <label class="small" style="margin:0 6px 0 0">Sounds</label>
-            <input id="soundToggle" type="checkbox" aria-label="Enable sounds"/>
-          </div>
-
-          <button id="viewHS" class="btn btn-sm btn-ghost" style="padding:8px 10px">High Scores</button>
-        </div>
-      </div>
-
-      <!-- main grid -->
-      <div class="grid">
-        <!-- left: menu & setup -->
-        <div>
-          <div style="display:flex;gap:12px;align-items:flex-start;flex-wrap:wrap;margin-top:14px">
-            <div style="flex:1;min-width:180px">
-              <label class="small">Number of players</label>
-              <select id="playerCount" aria-label="Number of players">
-                <option value="2">2 players</option>
-                <option value="3">3 players</option>
-                <option value="4">4 players</option>
-              </select>
+            <div class="hero-actions">
+              <a class="button primary" href="#pokedex">Explore Pokédex</a>
+              <a class="button secondary" href="#team">Build my team</a>
             </div>
 
-            <div style="flex:1;min-width:180px">
-              <label class="small">Number range</label>
-              <select id="rangeSelect" aria-label="Number range">
-                <option value="10">1 — 10</option>
-                <option value="20">1 — 20</option>
-                <option value="50">1 — 50</option>
-                <option value="100">1 — 100</option>
-              </select>
-            </div>
-
-            <div style="min-width:140px">
-              <label class="small">Turn time</label>
-              <select id="timeSelect" aria-label="Turn time">
-                <option value="7">7s</option>
-                <option value="10">10s</option>
-                <option value="15">15s</option>
-                <option value="20">20s</option>
-              </select>
+            <div class="stats" aria-label="Website stats">
+              <div class="stat">
+                <strong id="stat-count">9,000+</strong>
+                <span>Pokémon fans</span>
+              </div>
+              <div class="stat">
+                <strong>151</strong>
+                <span>Originals</span>
+              </div>
+              <div class="stat">
+                <strong>18</strong>
+                <span>Type matchups</span>
+              </div>
             </div>
           </div>
 
-          <div style="display:flex;gap:12px;align-items:center;margin-top:12px;flex-wrap:wrap">
-            <div style="flex:1;min-width:200px">
-              <label class="small">Game mode</label>
-              <select id="modeSelect" aria-label="Game Mode">
-                <option value="rounds">Rounds (N won rounds)</option>
-                <option value="bestof">Best of (first to majority)</option>
-              </select>
-            </div>
+          <div class="hero-card">
+            <div class="spotlight-wrap">
+              <div class="spotlight-bg"></div>
+              <div class="spotlight-glow"></div>
 
-            <div style="min-width:150px">
-              <label class="small" id="modeLabel">Rounds to win</label>
-              <input id="modeNumber" type="number" min="1" value="5" aria-label="Rounds or Best-of number" />
-            </div>
+              <div class="spotlight-content">
+                <div class="spotlight-badge">Trainer spotlight</div>
 
-            <div style="min-width:130px">
-              <label class="small">Demo</label>
-              <button id="demoBtn" class="btn btn-ghost">Auto-Play</button>
-            </div>
-          </div>
+                <img
+                  id="spotlight-image"
+                  class="pokemon-art"
+                  src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/25.png"
+                  alt="Pikachu"
+                />
 
-          <div id="playersNames" style="margin-top:12px;display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px" aria-live="polite">
-            <!-- dynamic name inputs -->
-          </div>
+                <div class="spotlight-meta">
+                  <div class="meta-top">
+                    <h2 id="spotlight-name" class="meta-name">Pikachu</h2>
+                    <span id="spotlight-id" class="meta-id">#025</span>
+                  </div>
 
-          <div style="display:flex;gap:10px;margin-top:14px;flex-wrap:wrap">
-            <button id="startBtn" class="btn">Start Game</button>
-            <button id="saveSettingsBtn" class="btn btn-ghost">Save Settings</button>
-            <button id="resetHS" class="btn btn-ghost">Clear High Scores</button>
-          </div>
-
-          <footer class="small">Tip: press Enter in the guess field to submit. Settings persist locally.</footer>
-        </div>
-
-        <!-- right: game panel -->
-        <aside class="controls-col">
-          <div class="card" style="padding:14px;">
-            <div class="game">
-              <div class="game-top">
-                <div>
-                  <div class="muted">Turn</div>
-                  <div id="playerTurnHeader" class="playerHeading">Player 1</div>
-                  <div id="roundsInfo" class="muted" style="margin-top:6px">Round 1</div>
-                </div>
-
-                <div style="text-align:center">
-                  <div class="muted">Time left</div>
-                  <div id="timerDisplay" class="timer" role="timer" aria-live="polite">10s</div>
+                  <div id="spotlight-types" class="pill-row" aria-label="Pokémon types"></div>
                 </div>
               </div>
+            </div>
+          </div>
+        </div>
+      </section>
 
+      <section id="pokedex" class="section">
+        <div class="section-head">
+          <div>
+            <span class="eyebrow">Pokédex</span>
+            <h2>Find your perfect partner</h2>
+          </div>
+          <p>Search by name or number and browse monster types.</p>
+        </div>
+
+        <div class="tool-panel">
+          <div class="controls">
+            <label class="input-wrap" aria-label="Search Pokémon">
+              <span>🔎</span>
+              <input id="pokemon-search" type="text" placeholder="Search Pokémon by name or #" />
+            </label>
+
+            <label class="input-wrap" aria-label="Select type filter">
+              <span>🌈</span>
+              <select id="type-filter">
+                <option value="all">All types</option>
+                <option value="fire">Fire</option>
+                <option value="water">Water</option>
+                <option value="grass">Grass</option>
+                <option value="electric">Electric</option>
+                <option value="psychic">Psychic</option>
+                <option value="bug">Bug</option>
+                <option value="rock">Rock</option>
+                <option value="ground">Ground</option>
+                <option value="steel">Steel</option>
+                <option value="fairy">Fairy</option>
+                <option value="poison">Poison</option>
+                <option value="flying">Flying</option>
+                <option value="normal">Normal</option>
+                <option value="ice">Ice</option>
+                <option value="dragon">Dragon</option>
+                <option value="dark">Dark</option>
+              </select>
+            </label>
+
+            <button id="random-button" class="search-button" type="button">Surprise me</button>
+          </div>
+        </div>
+
+        <div id="pokemon-grid" class="pokemon-grid" aria-live="polite"></div>
+      </section>
+
+      <section id="types" class="section">
+        <div class="section-head">
+          <div>
+            <span class="eyebrow">Battle arena</span>
+            <h2>Type advantages</h2>
+          </div>
+          <p>Every trainer needs a good matchup strategy.</p>
+        </div>
+
+        <div class="feature-grid">
+          <article class="feature">
+            <div class="feature-icon">🔥</div>
+            <h3>Fire</h3>
+            <p>Explosive attacks and fearless tempo. Great for aggressive starters and late-game finishes.</p>
+          </article>
+
+          <article class="feature">
+            <div class="feature-icon">💧</div>
+            <h3>Water</h3>
+            <p>Reliable controllers that take control of the field with pressure and steady damage.</p>
+          </article>
+
+          <article class="feature">
+            <div class="feature-icon">🌿</div>
+            <h3>Grass</h3>
+            <p>Balancing power and consistency with versatile defensive play and stamina.</p>
+          </article>
+
+          <article class="feature">
+            <div class="feature-icon">⚡</div>
+            <h3>Electric</h3>
+            <p>Fast, flashy, and occasionally devastating. Perfect for big plays and quick takedowns.</p>
+          </article>
+        </div>
+      </section>
+
+      <section id="team" class="section">
+        <div class="section-head">
+          <div>
+            <span class="eyebrow">Trainer hub</span>
+            <h2>Build your ultimate squad</h2>
+          </div>
+          <p>Choose resilient companions and battle-ready partners.</p>
+        </div>
+
+        <div class="team-layout">
+          <div class="team-card">
+            <h3>Your team</h3>
+            <div id="team-list" class="team-list" aria-live="polite"></div>
+          </div>
+
+          <div class="team-card">
+            <h3>Battle plan</h3>
+            <div class="battle-box">
+              <div class="battle-row">
+                <strong>Primary style</strong>
+                <span>Balanced offense</span>
+              </div>
+              <div class="battle-row">
+                <strong>Best starter</strong>
+                <span>Bulbasaur</span>
+              </div>
+              <div class="battle-row">
+                <strong>Wildcard pick</strong>
+                <span>Gengar</span>
+              </div>
+              <div class="battle-row">
+                <strong>Team synergy</strong>
+                <span>Speed + support</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="features" class="section">
+        <div class="section-head">
+          <div>
+            <span class="eyebrow">Why trainers love it</span>
+            <h2>Built for Pokémon fans</h2>
+          </div>
+          <p>Everything you need in one vibrant fan experience.</p>
+        </div>
+
+        <div class="feature-grid">
+          <article class="feature">
+            <div class="feature-icon">📚</div>
+            <h3>Pokédex explorer</h3>
+            <p>Browse fan-favorite monsters and quickly find stats, types, and iconic appearances.</p>
+          </article>
+
+          <article class="feature">
+            <div class="feature-icon">⚔️</div>
+            <h3>Battle readiness</h3>
+            <p>Track your best team members and build matchups that suit your strategy and play style.</p>
+          </article>
+
+          <article class="feature">
+            <div class="feature-icon">🎯</div>
+            <h3>Perfect for discoveries</h3>
+            <p>Enjoy smooth UI, strong visuals, and a fresh style inspired by the Pokémon adventure.</p>
+          </article>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <div class="container footer-shell">
+        <div>© 2026 PokeVerse • Catch your next obsession</div>
+        <div>Made for Pokémon lovers everywhere</div>
+      </div>
+    </footer>
+
+    <script>
+      const pokemonGrid = document.getElementById('pokemon-grid');
+      const searchInput = document.getElementById('pokemon-search');
+      const typeFilter = document.getElementById('type-filter');
+      const randomButton = document.getElementById('random-button');
+      const teamList = document.getElementById('team-list');
+
+      const spotlightName = document.getElementById('spotlight-name');
+      const spotlightId = document.getElementById('spotlight-id');
+      const spotlightImage = document.getElementById('spotlight-image');
+      const spotlightTypes = document.getElementById('spotlight-types');
+
+      const defaultTeam = ['pikachu', 'bulbasaur', 'charizard', 'gyarados'];
+      const favorites = new Set(defaultTeam);
+
+      const typeColors = {
+        fire: '#F97316',
+        water: '#38BDF8',
+        grass: '#4ADE80',
+        electric: '#FACC15',
+        psychic: '#C084FC',
+        bug: '#84CC16',
+        rock: '#A78BFA',
+        ground: '#D97706',
+        steel: '#94A3B8',
+        fairy: '#F9A8D4',
+        normal: '#CBD5E1',
+        flying: '#93C5FD',
+        poison: '#A78BFA',
+        ice: '#7DD3FC',
+        dragon: '#818CF8',
+        dark: '#64748B'
+      };
+
+      function formatId(id) {
+        return `#${String(id).padStart(3, '0')}`;
+      }
+
+      function typeMarkup(types = []) {
+        return types.map(type => {
+          const color = typeColors[type] || '#cbd5e1';
+          return `<span class="type-pill ${type}" style="background: ${hexToRgba(color, 0.15)}; border-color: ${hexToRgba(color, 0.45)}; color: ${color};">${type}</span>`;
+        }).join('');
+      }
+
+      function hexToRgba(hex, alpha) {
+        const value = hex.replace('#', '');
+        const bigint = parseInt(value, 16);
+        const r = (bigint >> 16) & 255;
+        const g = (bigint >> 8) & 255;
+        const b = bigint & 255;
+        return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+      }
+
+      function buildCard(pokemon) {
+        const typeNames = pokemon.types.map(item => item.type.name);
+        return `
+          <article class="pokemon-card">
+            <div class="top">
+              <span class="dex-id">${formatId(pokemon.id)}</span>
+              <button class="favorite-toggle" type="button" aria-label="Favorite ${pokemon.name}" data-name="${pokemon.name}">${favorites.has(pokemon.name) ? '★' : '☆'}</button>
+            </div>
+            <img src="${pokemon.sprites.other['official-artwork'].front_default || pokemon.sprites.front_default}" alt="${pokemon.name}" />
+            <h3>${pokemon.name}</h3>
+            <div class="sub">HP ${pokemon.stats[0].base_stat} • ATK ${pokemon.stats[1].base_stat}</div>
+            <div class="type-row">${typeMarkup(typeNames)}</div>
+          </article>
+        `;
+      }
+
+      function renderPokemonList(items) {
+        pokemonGrid.innerHTML = items.map(buildCard).join('');
+        attachFavoriteEvents();
+      }
+
+      async function fetchPokemonList() {
+        try {
+          const response = await fetch('https://pokeapi.co/api/v2/pokemon?limit=12');
+          if (!response.ok) throw new Error('Failed to fetch Pokémon list');
+          const data = await response.json();
+          const detailed = await Promise.all(
+            data.results.map(async (item) => {
+              const detailResponse = await fetch(item.url);
+              return detailResponse.json();
+            })
+          );
+          renderPokemonList(detailed);
+          return detailed;
+        } catch (error) {
+          pokemonGrid.innerHTML = '<div class="tool-panel" style="margin-top: 18px;">Unable to load Pokémon right now. Please try again in a moment.</div>';
+          console.error(error);
+          return [];
+        }
+      }
+
+      function attachFavoriteEvents() {
+        document.querySelectorAll('.favorite-toggle').forEach(button => {
+          button.addEventListener('click', () => {
+            const name = button.dataset.name;
+            if (favorites.has(name)) {
+              favorites.delete(name);
+              button.textContent = '☆';
+            } else {
+              favorites.add(name);
+              button.textContent = '★';
+            }
+            renderTeam();
+          });
+        });
+      }
+
+      function renderTeam() {
+        const team = Array.from(favorites).slice(0, 4);
+
+        if (!team.length) {
+          teamList.innerHTML = '<div class="team-member"><div class="team-badge">✦</div><div><h4>No favorites yet</h4><div class="mini">Select a star on any Pokémon card.</div></div></div>';
+          return;
+        }
+
+        Promise.all(
+          team.map(async (name) => {
+            const res = await fetch(`https://pokeapi.co/api/v2/pokemon/${name.toLowerCase()}`);
+            return res.json();
+          })
+        ).then(pokemons => {
+          teamList.innerHTML = pokemons.map((pokemon, index) => `
+            <div class="team-member">
+              <img src="${pokemon.sprites.other['official-artwork'].front_default || pokemon.sprites.front_default}" alt="${pokemon.name}" />
               <div>
-                <p class="muted" style="margin:8px 0 6px">Guess a number in the selected range</p>
-                <input id="guessInput" class="input-number" type="number" inputmode="numeric" aria-label="Guess number" min="1" />
+                <h4>${pokemon.name}</h4>
+                <div class="mini">${pokemon.types.map(item => item.type.name).join(' / ')}</div>
               </div>
-
-              <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
-                <button id="submitBtn" class="btn">Submit Guess</button>
-                <button id="passBtn" class="btn btn-ghost">End Turn</button>
-                <button id="endGameBtn" class="btn btn-ghost">End Game</button>
-              </div>
-
-              <div id="feedback" class="notice hidden" role="status" aria-live="polite"></div>
-              <div id="hint" class="hint hidden" aria-live="polite"></div>
-
-              <div class="scoreboard" aria-live="polite">
-                <h3 class="muted" style="margin:8px 0 6px">Scoreboard</h3>
-                <div id="scores"></div>
-
-                <div style="display:flex;gap:8px;margin-top:12px">
-                  <button id="menuBtn" class="btn btn-ghost">Back to Menu</button>
-                  <button id="resetScoreBtn" class="btn btn-ghost">Reset Scores</button>
-                </div>
-              </div>
+              <div class="team-badge">${index + 1}</div>
             </div>
-          </div>
-
-          <!-- high scores quick view -->
-          <div class="card" style="padding:12px;">
-            <div style="display:flex;align-items:center;justify-content:space-between">
-              <div class="muted">High Scores</div>
-              <button id="openHSsmall" class="btn btn-ghost" style="padding:6px 8px">View</button>
-            </div>
-            <div id="hsPreview" class="muted" style="margin-top:10px;font-size:13px;max-height:110px;overflow:auto"></div>
-          </div>
-        </aside>
-      </div>
-    </div>
-
-    <!-- Winner modal -->
-    <div id="winnerModal" class="modal hidden" aria-hidden="true" role="dialog" aria-modal="true">
-      <div class="card" role="document" tabindex="-1">
-        <div style="text-align:center">
-          <div id="winnerText" style="font-weight:900;font-size:20px;color:var(--success)">Winner!</div>
-          <div id="winnerDetails" class="muted" style="margin-top:6px"></div>
-          <div style="margin-top:12px;display:flex;gap:10px;justify-content:center">
-            <button id="playAgainBtn" class="btn">Play Again</button>
-            <button id="saveHSBtn" class="btn btn-ghost">Save to High Scores</button>
-            <button id="closeWinner" class="btn btn-ghost">Close</button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Highscores modal -->
-    <div id="hsModal" class="modal hidden" aria-hidden="true" role="dialog" aria-modal="true">
-      <div class="card" role="document" tabindex="-1">
-        <h2 style="margin:0 0 6px">High Scores</h2>
-        <div id="hsList" class="muted" style="max-height:320px;overflow:auto"></div>
-        <div style="margin-top:10px;display:flex;justify-content:flex-end">
-          <button id="closeHS" class="btn btn-ghost">Close</button>
-        </div>
-      </div>
-    </div>
-
-  </div>
-
-<script>
-(() => {
-  // elements
-  const body = document.body;
-  const themeSelect = document.getElementById('themeSelect');
-  const soundToggle = document.getElementById('soundToggle');
-  const playerCountSel = document.getElementById('playerCount');
-  const playersNamesDiv = document.getElementById('playersNames');
-  const startBtn = document.getElementById('startBtn');
-  const demoBtn = document.getElementById('demoBtn');
-  const saveSettingsBtn = document.getElementById('saveSettingsBtn');
-  const resetHSBtn = document.getElementById('resetHS');
-  const viewHS = document.getElementById('viewHS');
-  const openHSsmall = document.getElementById('openHSsmall');
-
-  const modeSelect = document.getElementById('modeSelect');
-  const modeLabel = document.getElementById('modeLabel');
-  const modeNumber = document.getElementById('modeNumber');
-  const rangeSelect = document.getElementById('rangeSelect');
-  const timeSelect = document.getElementById('timeSelect');
-
-  const playerTurnHeader = document.getElementById('playerTurnHeader');
-  const timerDisplay = document.getElementById('timerDisplay');
-  const guessInput = document.getElementById('guessInput');
-  const submitBtn = document.getElementById('submitBtn');
-  const passBtn = document.getElementById('passBtn');
-  const endGameBtn = document.getElementById('endGameBtn');
-  const feedback = document.getElementById('feedback');
-  const hint = document.getElementById('hint');
-  const scoresDiv = document.getElementById('scores');
-  const roundsInfo = document.getElementById('roundsInfo');
-  const menuBtn = document.getElementById('menuBtn');
-  const resetScoreBtn = document.getElementById('resetScoreBtn');
-  const hsPreview = document.getElementById('hsPreview');
-
-  const winnerModal = document.getElementById('winnerModal');
-  const winnerText = document.getElementById('winnerText');
-  const winnerDetails = document.getElementById('winnerDetails');
-  const playAgainBtn = document.getElementById('playAgainBtn');
-  const saveHSBtn = document.getElementById('saveHSBtn');
-  const closeWinner = document.getElementById('closeWinner');
-
-  const hsModal = document.getElementById('hsModal');
-  const hsList = document.getElementById('hsList');
-  const closeHS = document.getElementById('closeHS');
-
-  const startStateKey = 'qgd_settings_v2';
-  const highsKey = 'qgd_highscores_v2';
-
-  // state
-  let players = [];
-  let currentPlayer = 0;
-  let randomNumber = 1;    // secret for the current round (kept until someone guesses)
-  let maxNumber = 10;
-  let turnTime = 10;
-  let timeLeft = 10;
-  let timerId = null;
-  let allowSubmit = true;
-  let demoInterval = null;
-  let totalAttempts = 0;      // total guesses across game
-  let roundsWon = 0;         // number of won rounds (i.e., secrets guessed)
-  let targetRounds = 5;
-  let mode = 'rounds'; // 'rounds' or 'bestof'
-  let bestOfNeeded = null;
-
-  // audio
-  let audioCtx = null;
-  try {
-    const AC = window.AudioContext || window.webkitAudioContext;
-    audioCtx = AC ? new AC() : null;
-  } catch(e){ audioCtx = null; }
-  function ensureAudioUnlocked(){
-    if(!audioCtx) return;
-    if(audioCtx.state === 'suspended') audioCtx.resume().catch(()=>{});
-  }
-  function beep(freq=440, dur=0.08, type='sine'){
-    if(!audioCtx || !soundToggle.checked) return;
-    try{
-      const o = audioCtx.createOscillator();
-      const g = audioCtx.createGain();
-      o.type = type; o.frequency.value = freq;
-      g.gain.value = 0.12;
-      o.connect(g); g.connect(audioCtx.destination);
-      o.start();
-      setTimeout(()=>{ try{ o.stop(); }catch(e){} }, dur*1000);
-    }catch(e){}
-  }
-
-  // utils
-  function $all(sel, root=document){ return Array.from((root||document).querySelectorAll(sel)); }
-  function escapeHtml(s){ return String(s).replace(/[&<>"']/g, c=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c])); }
-
-  function saveSettings(){
-    const st = {
-      theme: themeSelect.value,
-      sounds: !!soundToggle.checked,
-      playerCount: parseInt(playerCountSel.value,10),
-      names: $all('.pname').map(i=>i.value.trim()),
-      range: parseInt(rangeSelect.value,10),
-      time: parseInt(timeSelect.value,10),
-      mode: modeSelect.value,
-      modeNumber: parseInt(modeNumber.value,10)
-    };
-    try {
-      localStorage.setItem(startStateKey, JSON.stringify(st));
-      showTempFeedback('Settings saved', true);
-      renderHSPreview();
-    } catch(e){
-      showTempFeedback('Could not save settings', false);
-    }
-  }
-  function loadSettings(){
-    try {
-      const raw = localStorage.getItem(startStateKey);
-      return raw ? JSON.parse(raw) : null;
-    } catch(e){ return null; }
-  }
-  function getHighScores(){ try{ const raw = localStorage.getItem(highsKey); return raw?JSON.parse(raw):[] } catch(e){ return []; } }
-  function saveHighScores(list){ try{ localStorage.setItem(highsKey, JSON.stringify(list.slice(0,50))); }catch(e){} }
-  function addHighScore(entry){ const arr = getHighScores(); arr.unshift(entry); saveHighScores(arr.slice(0,50)); renderHSPreview(); }
-
-  // UI small helpers
-  let feedbackTimer = null;
-  function showTempFeedback(msg, ok){
-    clearTimeout(feedbackTimer);
-    feedback.classList.remove('hidden');
-    feedback.textContent = msg;
-    feedback.style.background = ok ? 'linear-gradient(90deg,#0b3b4b, rgba(34,197,94,0.06))' : 'rgba(0,0,0,0.18)';
-    feedbackTimer = setTimeout(()=> feedback.classList.add('hidden'), 1400);
-  }
-  function renderPlayerNameInputs(){
-    playersNamesDiv.innerHTML = '';
-    const cnt = Math.max(2, Math.min(4, parseInt(playerCountSel.value,10) || 2));
-    for(let i=0;i<cnt;i++){
-      const wrapper = document.createElement('div');
-      wrapper.innerHTML = `<label class="small">Player ${i+1} name</label>
-        <input maxlength="20" class="pname" data-idx="${i}" type="text" value="Player ${i+1}" aria-label="Player ${i+1} name" />`;
-      playersNamesDiv.appendChild(wrapper);
-    }
-  }
-  function createPlayersFromInputs(){
-    const names = $all('.pname').map(el => el.value.trim() || `Player ${Number(el.dataset.idx)+1}`);
-    players = names.map(n => ({ name: n, score: 0 }));
-  }
-  function renderScores(){
-    scoresDiv.innerHTML = '';
-    players.forEach((p,i) => {
-      const node = document.createElement('div');
-      node.className = 'player-line' + (i===currentPlayer ? ' active' : '');
-      node.innerHTML = `<div><div class="player-name">${escapeHtml(p.name)}</div><div class="muted">Player ${i+1}</div></div>
-                        <div style="text-align:right"><div style="font-weight:900">${p.score}</div></div>`;
-      scoresDiv.appendChild(node);
-    });
-  }
-  function applyTheme(){
-    body.setAttribute('data-theme', themeSelect.value === 'light' ? 'light' : 'dark');
-  }
-
-  // game core
-  function generateRandom(){
-    randomNumber = Math.floor(Math.random() * maxNumber) + 1;
-  }
-
-  function startTimer(){
-    clearTimer();
-    updateTimerDisplay();
-    timerId = setInterval(()=>{
-      timeLeft--;
-      updateTimerDisplay();
-      if(timeLeft <= 0){
-        beep(220,0.06,'square');
-        showTempFeedback('Time ran out', false);
-        // treat as passed attempt (no hint reveal or answer reveal)
-        rotateAfterAttempt({ revealHint:false });
+          `).join('');
+        }).catch(() => {
+          teamList.innerHTML = '<div class="team-member"><div class="team-badge">!</div><div><h4>Unable to load team</h4><div class="mini">The trainer roster is temporarily unavailable.</div></div></div>';
+        });
       }
-    }, 1000);
-  }
-  function clearTimer(){ if(timerId){ clearInterval(timerId); timerId = null; } }
-  function updateTimerDisplay(){ timerDisplay.textContent = `${timeLeft}s`; if(timeLeft<=3) timerDisplay.classList.add('warn'); else timerDisplay.classList.remove('warn'); }
 
-  function updateRoundInfo(){
-    if(mode === 'rounds'){
-      roundsInfo.textContent = `Round ${Math.min(roundsWon + 1, targetRounds)} / ${targetRounds}`;
-    } else {
-      roundsInfo.textContent = `First to ${bestOfNeeded} wins`;
-    }
-  }
+      async function updateSpotlight() {
+        const randomId = Math.floor(Math.random() * 898) + 1;
+        const response = await fetch(`https://pokeapi.co/api/v2/pokemon/${randomId}`);
+        const pokemon = await response.json();
 
-  function checkEndConditionAfterWin(){
-    if(mode === 'bestof'){
-      const winner = players.find(p => p.score >= bestOfNeeded);
-      return winner || null;
-    } else {
-      if(roundsWon >= targetRounds){
-        // game ends as soon as target reached
-        // highest score wins
-        const max = Math.max(...players.map(p=>p.score));
-        const winners = players.filter(p=>p.score===max);
-        return winners.length === 1 ? winners[0] : { tie:true, winners };
+        spotlightName.textContent = pokemon.name;
+        spotlightId.textContent = formatId(pokemon.id);
+        spotlightImage.src = pokemon.sprites.other['official-artwork'].front_default || pokemon.sprites.front_default;
+        spotlightImage.alt = pokemon.name;
+        spotlightTypes.innerHTML = typeMarkup(pokemon.types.map(item => item.type.name));
       }
-      return null;
-    }
-  }
 
-  function showWinner(winnerName, detailText){
-    clearTimer();
-    winnerModal.classList.remove('hidden');
-    winnerModal.setAttribute('aria-hidden','false');
-    const card = winnerModal.querySelector('.card');
-    card && card.focus && card.focus();
-    if(Array.isArray(detailText)){
-      winnerText.textContent = 'Tie!';
-      winnerDetails.textContent = 'Tie between: ' + detailText.join(', ');
-      saveHSBtn.dataset.winner = detailText.join(', ');
-      saveHSBtn.dataset.note = 'Tie';
-    } else {
-      if(!winnerName){
-        winnerText.textContent = 'No winner';
-        winnerDetails.textContent = detailText || '';
-        saveHSBtn.dataset.winner = '';
-        saveHSBtn.dataset.note = detailText || '';
-      } else {
-        winnerText.textContent = `${winnerName} wins!`;
-        const p = players.find(x=>x.name===winnerName) || null;
-        winnerDetails.textContent = p ? `Score: ${p.score}` : (detailText || '');
-        saveHSBtn.dataset.winner = winnerName;
-        saveHSBtn.dataset.note = p ? `Score ${p.score}` : (detailText || '');
+      function filterPokemon(pokemonList) {
+        const query = searchInput.value.trim().toLowerCase();
+        const selectedType = typeFilter.value;
+
+        return pokemonList.filter((pokemon) => {
+          const matchesText = !query || pokemon.name.includes(query) || String(pokemon.id) === query;
+          const typeNames = pokemon.types.map(item => item.type.name);
+          const matchesType = selectedType === 'all' || typeNames.includes(selectedType);
+          return matchesText && matchesType;
+        });
       }
-    }
-  }
 
-  function hideWinnerModal(){ winnerModal.classList.add('hidden'); winnerModal.setAttribute('aria-hidden','true'); }
-
-  // rotate to next player after an attempt that does NOT end the round
-  function rotateAfterAttempt({ revealHint = false, hintText = '', pause = 700 } = {}){
-    clearTimer();
-    allowSubmit = false;
-    if(revealHint){
-      hint.classList.remove('hidden');
-      hint.textContent = hintText;
-      beep(360,0.06,'square');
-    } else {
-      hint.classList.add('hidden');
-      hint.textContent = '';
-    }
-
-    setTimeout(()=>{
-      // move to next player
-      currentPlayer = (currentPlayer + 1) % players.length;
-      totalAttempts++;
-      renderScores();
-      playerTurnHeader.textContent = players[currentPlayer].name + "'s Turn";
-      guessInput.value = '';
-      hint.classList.add('hidden');
-      allowSubmit = true;
-      timeLeft = turnTime;
-      updateRoundInfo();
-      startTimer();
-    }, pause);
-  }
-
-  // start a new round: generate secret and notify (no reveal)
-  function startNewRound(startingPlayerIndex = null){
-    roundsWon = roundsWon; // unchanged; roundsWon increments only on wins
-    if(typeof startingPlayerIndex === 'number') currentPlayer = startingPlayerIndex % players.length;
-    generateRandom();
-    timeLeft = turnTime;
-    allowSubmit = true;
-    renderScores();
-    playerTurnHeader.textContent = players[currentPlayer].name + "'s Turn";
-    guessInput.value = '';
-    hint.classList.add('hidden');
-    updateRoundInfo();
-    startTimer();
-  }
-
-  // core submit logic
-  function doSubmit(){
-    if(!allowSubmit) return;
-    const raw = String(guessInput.value).trim();
-    if(raw === ''){
-      showTempFeedback('Please enter a number', false);
-      return;
-    }
-    const guessed = Number(raw);
-    if(!Number.isInteger(guessed) || guessed < 1 || guessed > maxNumber){
-      showTempFeedback(`Enter whole number 1–${maxNumber}`, false);
-      return;
-    }
-
-    // lock the input while processing
-    allowSubmit = false;
-    clearTimer();
-
-    if(guessed === randomNumber){
-      // CORRECT: award point, increment roundsWon, reveal and then start next round (or end game)
-      players[currentPlayer].score += 1;
-      roundsWon += 1;
-      renderScores();
-      hint.classList.remove('hidden');
-      hint.textContent = `Correct! Answer: ${randomNumber} — +1 point`;
-      beep(880,0.12,'sine');
-
-      // check end condition immediately after awarding
-      const end = checkEndConditionAfterWin();
-      if(end){
-        // game ends
-        setTimeout(()=>{
-          if(end.tie) showWinner(null, end.winners.map(w=>w.name));
-          else showWinner(end.name, `Score: ${end.score}`);
-        }, 900);
-      } else {
-        // start a new round after short pause. start next round with next player
-        setTimeout(()=>{
-          // next player starts next round
-          currentPlayer = (currentPlayer + 1) % players.length;
-          startNewRound(currentPlayer);
-        }, 900);
+      async function searchAndRender() {
+        const list = await fetchPokemonList();
+        const results = filterPokemon(list);
+        if (results.length) {
+          renderPokemonList(results);
+        } else {
+          pokemonGrid.innerHTML = '<div class="tool-panel" style="margin-top: 18px;">No Pokémon matched your search. Try another name or filter.</div>';
+        }
       }
-    } else {
-      // WRONG: give higher/lower hint but DO NOT reveal the secret. rotate to next player.
-      const hintText = guessed < randomNumber ? 'Higher' : 'Lower';
-      showTempFeedback(`Wrong — ${hintText}`, false);
-      rotateAfterAttempt({ revealHint: true, hintText });
-    }
-  }
 
-  // pass (end turn) -> no hint, no reveal, rotate
-  function passTurn(){
-    if(!allowSubmit) return;
-    clearTimer();
-    allowSubmit = false;
-    showTempFeedback('Turn passed', false);
-    rotateAfterAttempt({ revealHint: false, pause: 500 });
-  }
-
-  // demo autoplay (for testing)
-  function startDemo(){
-    stopDemo();
-    demoInterval = setInterval(()=>{
-      if(!allowSubmit) return;
-      const doCorrect = Math.random() < 0.28;
-      if(doCorrect) guessInput.value = randomNumber;
-      else {
-        let g = Math.floor(Math.random() * maxNumber) + 1;
-        if(g === randomNumber) g = (g % maxNumber) + 1;
-        guessInput.value = g;
+      function randomizePokemon() {
+        const list = Array.from({ length: 12 }, (_, index) => index + 1);
+        const randomPick = list[Math.floor(Math.random() * list.length)];
+        fetch(`https://pokeapi.co/api/v2/pokemon/${randomPick}`)
+          .then(res => res.json())
+          .then(data => {
+            searchInput.value = data.name;
+            searchAndRender();
+          });
       }
-      doSubmit();
-    }, 800);
-    showTempFeedback('Demo started', true);
-  }
-  function stopDemo(){ if(demoInterval){ clearInterval(demoInterval); demoInterval = null; } }
 
-  // highscores UI
-  function openHighScores(){
-    hsModal.classList.remove('hidden'); hsModal.setAttribute('aria-hidden','false');
-    const hs = getHighScores();
-    if(hs.length === 0){
-      hsList.innerHTML = '<div class="muted">No high scores yet — be the first!</div>';
-      return;
-    }
-    hsList.innerHTML = hs.map(h => {
-      const dt = new Date(h.when).toLocaleString();
-      return `<div style="padding:8px;border-bottom:1px solid rgba(0,0,0,0.06)"><div style="font-weight:800">${escapeHtml(h.winner)}</div><div class="muted">${escapeHtml(h.note)} • ${escapeHtml(h.mode)} • range ${h.maxNumber} • ${dt}</div></div>`;
-    }).join('');
-    try { closeHS.focus(); }catch(e){}
-  }
-  function hideHSModal(){ hsModal.classList.add('hidden'); hsModal.setAttribute('aria-hidden','true'); }
+      searchInput.addEventListener('input', () => {
+        fetchPokemonList().then(list => {
+          const results = filterPokemon(list);
+          if (results.length) renderPokemonList(results);
+          else pokemonGrid.innerHTML = '<div class="tool-panel" style="margin-top: 18px;">No Pokémon matched your search.</div>';
+        });
+      });
 
-  function clearHighScores(){
-    if(confirm('Clear all saved high scores?')){
-      localStorage.removeItem(highsKey);
-      showTempFeedback('High scores cleared', true);
-      renderHSPreview();
-      hideHSModal();
-    }
-  }
+      typeFilter.addEventListener('change', () => {
+        fetchPokemonList().then(list => {
+          const results = filterPokemon(list);
+          if (results.length) renderPokemonList(results);
+          else pokemonGrid.innerHTML = '<div class="tool-panel" style="margin-top: 18px;">No Pokémon match this type.</div>';
+        });
+      });
 
-  function saveWinnerToHS(){
-    ensureAudioUnlocked();
-    const winnerName = saveHSBtn.dataset.winner || '';
-    const note = saveHSBtn.dataset.note || 'Winner';
-    if(!winnerName) { showTempFeedback('No winner to save', false); return; }
-    const entry = { when: Date.now(), winner: winnerName, note, mode: modeSelect.value || mode, maxNumber, turnTime };
-    addHighScore(entry);
-    showTempFeedback('High score saved', true);
-  }
+      randomButton.addEventListener('click', randomizePokemon);
 
-  // small highscore preview
-  function renderHSPreview(){
-    const hs = getHighScores().slice(0,4);
-    if(hs.length === 0){
-      hsPreview.textContent = 'No high scores yet';
-      return;
-    }
-    hsPreview.innerHTML = hs.map(h => `${escapeHtml(h.winner)} · ${escapeHtml(h.note)} · ${h.maxNumber}`).join('<br>');
-  }
-
-  // events wiring
-  playerCountSel.addEventListener('change', renderPlayerNameInputs);
-  modeSelect.addEventListener('change', ()=>{
-    mode = modeSelect.value;
-    modeLabel.textContent = mode === 'bestof' ? 'Best-of (odd number recommended)' : 'Rounds to win';
-  });
-  modeNumber.addEventListener('input', ()=>{
-    if(Number(modeNumber.value) < 1) modeNumber.value = 1;
-  });
-
-  startBtn.addEventListener('click', ()=>{
-    ensureAudioUnlocked();
-    createPlayersFromInputs();
-    if(players.length < 2){ showTempFeedback('At least 2 players required', false); return; }
-    maxNumber = parseInt(rangeSelect.value,10) || 10;
-    turnTime = parseInt(timeSelect.value,10) || 10;
-    mode = modeSelect.value;
-    let mn = Math.max(1, parseInt(modeNumber.value,10) || 1);
-    if(mode === 'bestof'){
-      if(mn % 2 === 0) mn += 1; // make odd
-      bestOfNeeded = Math.ceil(mn / 2);
-      modeNumber.value = mn;
-    } else {
-      targetRounds = mn;
-      bestOfNeeded = null;
-    }
-
-    // reset state
-    players.forEach(p=>p.score=0);
-    currentPlayer = 0;
-    roundsWon = 0;
-    totalAttempts = 0;
-    maxNumber = parseInt(rangeSelect.value,10) || 10;
-    // initial secret for round
-    generateRandom();
-    applyTheme();
-    renderScores();
-    updateRoundInfo();
-    // set guess input bounds
-    guessInput.max = String(maxNumber);
-    guessInput.placeholder = `1 — ${maxNumber}`;
-    try { guessInput.focus({preventScroll:true}); } catch(e){ guessInput.focus(); }
-    timeLeft = turnTime;
-    allowSubmit = true;
-    startTimer();
-  });
-
-  demoBtn.addEventListener('click', ()=>{
-    ensureAudioUnlocked();
-    if(demoInterval) { stopDemo(); showTempFeedback('Demo stopped', true); }
-    else {
-      createPlayersFromInputs();
-      players.forEach(p=>p.score=0);
-      currentPlayer = 0;
-      roundsWon = 0;
-      maxNumber = parseInt(rangeSelect.value,10) || 10;
-      generateRandom();
-      renderScores();
-      startTimer();
-      startDemo();
-    }
-  });
-
-  saveSettingsBtn.addEventListener('click', saveSettings);
-  resetHSBtn.addEventListener('click', clearHighScores);
-  viewHS.addEventListener('click', openHighScores);
-  openHSsmall.addEventListener('click', openHighScores);
-
-  submitBtn.addEventListener('click', doSubmit);
-  passBtn.addEventListener('click', passTurn);
-  endGameBtn.addEventListener('click', ()=>{ if(confirm('End game early?')) {
-    // Decide winner now
-    const max = Math.max(...players.map(p=>p.score));
-    const winners = players.filter(p=>p.score===max);
-    if(winners.length===1) showWinner(winners[0].name, `Score: ${winners[0].score}`);
-    else showWinner(null, winners.map(w=>w.name));
-  }});
-
-  menuBtn.addEventListener('click', ()=>{ if(confirm('Return to menu? Current game will stop.')) { clearTimer(); stopDemo(); renderPlayerNameInputs(); renderHSPreview(); } });
-  resetScoreBtn.addEventListener('click', ()=>{ if(confirm('Reset scores?')) { players.forEach(p=>p.score=0); renderScores(); showTempFeedback('Scores reset', true); } });
-
-  playAgainBtn.addEventListener('click', ()=>{
-    players.forEach(p=>p.score=0);
-    roundsWon = 0; currentPlayer = 0; totalAttempts = 0;
-    hideWinnerModal();
-    renderScores();
-    generateRandom();
-    updateRoundInfo();
-    timeLeft = turnTime;
-    allowSubmit = true;
-    startTimer();
-  });
-  saveHSBtn.addEventListener('click', saveWinnerToHS);
-  closeWinner.addEventListener('click', hideWinnerModal);
-
-  closeHS.addEventListener('click', hideHSModal);
-
-  // keyboard accessibility
-  guessInput.addEventListener('keydown', (e)=>{ if(e.key === 'Enter'){ e.preventDefault(); doSubmit(); } });
-  document.addEventListener('keydown', (e)=>{ if(e.key === 'Escape'){ if(!winnerModal.classList.contains('hidden')) hideWinnerModal(); if(!hsModal.classList.contains('hidden')) hideHSModal(); } });
-
-  // theme listener
-  themeSelect.addEventListener('change', applyTheme);
-
-  // keep guessInput.max in sync
-  rangeSelect.addEventListener('change', ()=>{
-    maxNumber = parseInt(rangeSelect.value,10) || 10;
-    guessInput.max = String(maxNumber);
-    guessInput.placeholder = `1 — ${maxNumber}`;
-  });
-
-  // clicking outside modals closes them
-  [winnerModal, hsModal].forEach(mod => {
-    mod.addEventListener('click', (ev) => { if(ev.target === mod){ mod.classList.add('hidden'); mod.setAttribute('aria-hidden','true'); }});
-  });
-
-  // initial setup
-  renderPlayerNameInputs();
-  const loaded = loadSettings();
-  if(loaded){ 
-    // apply loaded preferences (but don't auto-start a game)
-    themeSelect.value = loaded.theme || 'dark';
-    soundToggle.checked = !!loaded.sounds;
-    playerCountSel.value = loaded.playerCount || 2;
-    rangeSelect.value = loaded.range || 10;
-    timeSelect.value = loaded.time || 10;
-    modeSelect.value = loaded.mode || 'rounds';
-    modeNumber.value = loaded.modeNumber || 5;
-    renderPlayerNameInputs();
-    const els = $all('.pname'); els.forEach((el,i)=> { if(loaded.names && loaded.names[i]) el.value = loaded.names[i]; });
-    applyTheme();
-  } else { applyTheme(); }
-
-  renderHSPreview();
-
-  // expose small debug
-  window.QGD = { getHighScores, saveSettings, loadSettings, startDemo, stopDemo };
-
-})();
-</script>
-</body>
+      fetchPokemonList();
+      renderTeam();
+      updateSpotlight();
+    </script>
+  </body>
 </html>
